@@ -2,6 +2,7 @@ package week1;
 
 public class TxHandler {
 
+	private UTXOPool utxoPool;
     /**
      * Creates a public ledger whose current UTXOPool (collection of unspent transaction outputs) is
      * {@code utxoPool}. This should make a copy of utxoPool by using the UTXOPool(UTXOPool uPool)
@@ -9,6 +10,7 @@ public class TxHandler {
      */
     public TxHandler(UTXOPool utxoPool) {
         // IMPLEMENT THIS
+    	this.utxoPool = utxoPool;
     }
 
     /**
