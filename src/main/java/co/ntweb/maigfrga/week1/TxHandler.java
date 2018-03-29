@@ -1,4 +1,4 @@
-package week1;
+package co.ntweb.maigfrga.week1;
 
 public class TxHandler {
 

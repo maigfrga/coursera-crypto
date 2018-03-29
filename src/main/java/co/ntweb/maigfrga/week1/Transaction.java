@@ -1,4 +1,4 @@
-package week1;
+package co.ntweb.maigfrga.week1;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;

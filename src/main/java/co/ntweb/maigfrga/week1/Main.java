@@ -1,4 +1,4 @@
-package week1;
+package co.ntweb.maigfrga.week1;
 
 /*
  * Main test code for Cousera cryptocurrency assignment1

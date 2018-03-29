@@ -1,4 +1,4 @@
-package week1;
+package co.ntweb.maigfrga.week1;
 
 // Copyright (C) 2016-2017 Enrique Albertos
 // Distributed under the GNU GPL v2 software license
