@@ -41,6 +41,13 @@ public class IsValidTest {
 		}
 	}
 
+	// Test that that all outputs claimed by a given transaction are in the current UTXO pool
+
+	@Test
+	public void testOutputExists() {
+
+	}
+
 	// Test 1: test isValidTx() with valid transactions
 	@Test
 	public void testIsValidWithValidTransactions()
