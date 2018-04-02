@@ -23,8 +23,28 @@ public class TxHandler {
      *     values; and false otherwise.
      */
     public boolean isValidTx(Transaction tx) {
-    	return false;
-        
+    	boolean isValid = false;
+    	
+    	// Total outputs by transaction
+    	int totalOutpus = tx.getOutputs().size();
+    	int validTransactionCounter = 0;
+    	// True if all outputs claimed by {@code tx} are in the current UTXO pool,
+    	boolean outputsExists = false;
+    	
+    	
+    	for (UXTO uxto: this.utxoPool.getAllUTXO()) {
+    		
+    	}
+    	
+    	
+    	for(Transaction.Output o: tx.getOutputs()) {
+    		if (this.utxoPool.contains(o.value)) {
+    			validTransactionCounter++;
+    		}
+    		
+    		
+    	}
+    	return isValid;        
     }
 
     /**

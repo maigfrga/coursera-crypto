@@ -5,6 +5,7 @@ package co.ntweb.maigfrga.week1;
 
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -44,7 +45,42 @@ public class IsValidTest {
 	// Test that that all outputs claimed by a given transaction are in the current UTXO pool
 
 	@Test
-	public void testOutputExists() {
+	public void testOutputExists() throws InvalidKeyException, NoSuchAlgorithmException, SignatureException {
+
+		
+		
+		// Create a new set of transactions for testing				
+		final UtxoTestSet utxoTestSet1 = UtxoTestSet.builder()
+				.setPeopleSize(10)
+				.setUtxoTxNumber(10)
+				.setMaxUtxoTxOutput(10)
+				.setMaxValue(200)
+				.setTxPerTest(10)
+				.setMaxInput(10)
+				.setMaxOutput(10)
+				.setInvalidTotals(true)  // create transactions with invalid total value
+				.setCorruptedPercentage(.20) // probability of 20% of invalid transactions
+				.build();
+
+		
+		final UtxoTestSet utxoTestSet2 = UtxoTestSet.builder()
+				.setPeopleSize(10)
+				.setUtxoTxNumber(10)
+				.setMaxUtxoTxOutput(10)
+				.setMaxValue(200)
+				.setTxPerTest(10)
+				.setMaxInput(10)
+				.setMaxOutput(10)
+				.setInvalidTotals(true)  // create transactions with invalid total value
+				.setCorruptedPercentage(.20) // probability of 20% of invalid transactions
+				.build();
+
+		
+		final TxHandler txHandler = new TxHandler(utxoTestSet1.getUtxoPool());
+
+		// Verifying a transaction that is not part of the ledger				
+		final Transaction tx = utxoTestSet2.getValidationLists().allElements().get(0);					
+		assertFalse(txHandler.isValidTx(tx));
 
 	}
 

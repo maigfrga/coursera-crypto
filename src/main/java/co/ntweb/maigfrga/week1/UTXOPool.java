@@ -6,6 +6,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 
+/**
+ * ​ UTXOPool ​ class that represents the current set of outstanding UTXOs
+ * and contains a map from each ​ UTXO ​ to its corresponding transaction output. This class 
+ * contains constructors to create a new empty ​ UTXOPool ​ or a copy of a given ​ UTXOPool,
+ * and methods to add and remove ​ UTXO s from the pool, get the output corresponding to a given ​ UTXO,
+ * check if a UTXO ​ is in the pool, and get a list of all ​ UTXOs in the pool.
+ * @author manuel
+ *
+ */
+
 public class UTXOPool {
 
     /**

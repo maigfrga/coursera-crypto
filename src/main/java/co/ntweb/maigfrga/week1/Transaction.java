@@ -7,8 +7,26 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 
+/**
+ * A transaction consists of a list of inputs, a list of outputs and a unique ID (see the ​ getRawTx()
+ * method). The class also contains methods to add and remove an input, add an output,
+ * compute digests to sign/hash, add a signature to an input, and compute and store the hash of the
+ * transaction once all inputs/outputs/signatures have been added.
+ * @author manuel
+ *
+ */
+
 public class Transaction {
 
+	
+	/**
+	 * A transaction input consists of the hash of the transaction that contains the corresponding
+	 * output, the index of this output in that transaction (indices are simply integers starting from 0),
+	 * and a digital signature. For the input to be valid, the signature it contains must be a valid signature
+	 * over the current transaction with the public key in the spent output.
+	 * @author manuel
+	 *
+	 */
     public class Input {
         /** hash of the Transaction whose output is being used */
         public byte[] prevTxHash;
@@ -19,10 +37,10 @@ public class Transaction {
 
         public Input(byte[] prevHash, int index) {
             if (prevHash == null)
-                prevTxHash = null;
+                this.prevTxHash = null;
             else
-                prevTxHash = Arrays.copyOf(prevHash, prevHash.length);
-            outputIndex = index;
+                this.prevTxHash = Arrays.copyOf(prevHash, prevHash.length);
+            this.outputIndex = index;
         }
 
         public void addSignature(byte[] sig) {
@@ -33,6 +51,13 @@ public class Transaction {
         }
     }
 
+    
+    /**
+     * A transaction output consists of a value and a public key to which it is being paid.
+     * For the public keys, we use the built-in Java ​ PublicKey ​ class
+     * @author manuel
+     *
+     */
     public class Output {
         /** value in bitcoins of the output */
         public double value;

@@ -4,6 +4,15 @@ package co.ntweb.maigfrga.week1;
 
 import java.util.Arrays;
 
+/**
+ * UTXO ​ class that represents an unspent transaction output. A ​ UTXO contains the hash of the transaction
+ * from which it originates as well as its index within that transaction. We have included ​ equals,
+ * hashCode ​ , and ​ compareTo ​ functions in ​ UTXO ​ that allow the testing of equality and comparison
+ * between two ​ UTXO ​ s based on their indices and the contents of their txHash arrays
+ * @author manuel
+ *
+ */
+
 public class UTXO implements Comparable<UTXO> {
 
     /** Hash of the transaction from which this UTXO originates */
