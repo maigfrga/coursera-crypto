@@ -30,20 +30,20 @@ public class TxHandler {
     	int validTransactionCounter = 0;
     	// True if all outputs claimed by {@code tx} are in the current UTXO pool,
     	boolean outputsExists = false;
-    	
-    	
-    	for (UXTO uxto: this.utxoPool.getAllUTXO()) {
-    		
-    	}
-    	
-    	
+
+
+
+    	//for (UXTO uxto: this.utxoPool.getAllUTXO()) {
+    	//
+    	//}
+    	//
+    	//
     	for(Transaction.Output o: tx.getOutputs()) {
-    		if (this.utxoPool.contains(o.value)) {
+    		if (this.utxoPool.contains()) {
     			validTransactionCounter++;
     		}
     		
-    		
-    	}
+    	//}
     	return isValid;        
     }
 

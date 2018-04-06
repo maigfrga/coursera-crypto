@@ -6,11 +6,20 @@ package co.ntweb.maigfrga.week1;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Before;
+import org.junit.After;
 
 import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.PublicKey;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
+import java.util.HashMap;
+import java.util.Map;
 
+import co.ntweb.maigfrga.utils.TestFactory;
 import org.junit.Test;
 /**
  * Unit tests for {@link TxHandler#isValidTx(Transaction)}
@@ -29,7 +38,19 @@ import org.junit.Test;
  */
 
 public class IsValidTest {
-	
+
+	private TestFactory factory;
+
+	@Before
+	public void initialize() {
+		factory = new TestFactory();
+	}
+
+	@After
+	public void destroy() {
+		factory = null;
+	}
+
 	private static void assertTestSetIsValid(final UtxoTestSet utxoTestSet) {
 		final ValidationLists<Transaction> trxsValidation = utxoTestSet.getValidationLists();
 		
@@ -45,43 +66,27 @@ public class IsValidTest {
 	// Test that that all outputs claimed by a given transaction are in the current UTXO pool
 
 	@Test
-	public void testOutputExists() throws InvalidKeyException, NoSuchAlgorithmException, SignatureException {
+	public void testUTXOExistsInPool() throws InvalidKeyException, NoSuchAlgorithmException, SignatureException {
 
-		
-		
-		// Create a new set of transactions for testing				
-		final UtxoTestSet utxoTestSet1 = UtxoTestSet.builder()
-				.setPeopleSize(10)
-				.setUtxoTxNumber(10)
-				.setMaxUtxoTxOutput(10)
-				.setMaxValue(200)
-				.setTxPerTest(10)
-				.setMaxInput(10)
-				.setMaxOutput(10)
-				.setInvalidTotals(true)  // create transactions with invalid total value
-				.setCorruptedPercentage(.20) // probability of 20% of invalid transactions
-				.build();
+		KeyPair owner = factory.createAddress();
+        KeyPair other = factory.createAddress();
+        KeyPair other2 = factory.createAddress();
 
-		
-		final UtxoTestSet utxoTestSet2 = UtxoTestSet.builder()
-				.setPeopleSize(10)
-				.setUtxoTxNumber(10)
-				.setMaxUtxoTxOutput(10)
-				.setMaxValue(200)
-				.setTxPerTest(10)
-				.setMaxInput(10)
-				.setMaxOutput(10)
-				.setInvalidTotals(true)  // create transactions with invalid total value
-				.setCorruptedPercentage(.20) // probability of 20% of invalid transactions
-				.build();
+		// Create a UTXO pool that has an initial root transaction with a valid
+        // unspent trasaction
+		UTXOPool pool = factory.createUtxoPool(owner, 10);
+        Transaction rootTransaction = factory.getTransactions().get(0);
 
-		
-		final TxHandler txHandler = new TxHandler(utxoTestSet1.getUtxoPool());
 
-		// Verifying a transaction that is not part of the ledger				
-		final Transaction tx = utxoTestSet2.getValidationLists().allElements().get(0);					
-		assertFalse(txHandler.isValidTx(tx));
+		final TxHandler txHandler = new TxHandler(pool);
+        // check if root transaction is valid
+		assertTrue(txHandler.isValidTx(rootTransaction));
 
+        Map<PublicKey, Double> outputs = new HashMap<>();
+        outputs.put(other.getPublic(), 5d);
+		// create a spare transaction that won't be in the UTXOPool
+        Transaction tx = factory.createTransaction(other2, outputs);
+        assertFalse(txHandler.isValidTx(tx));
 	}
 
 	// Test 1: test isValidTx() with valid transactions
