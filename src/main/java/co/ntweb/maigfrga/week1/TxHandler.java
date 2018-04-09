@@ -1,5 +1,8 @@
 package co.ntweb.maigfrga.week1;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class TxHandler {
 
 	private UTXOPool utxoPool;
@@ -10,7 +13,7 @@ public class TxHandler {
      */
     public TxHandler(UTXOPool utxoPool) {
         // IMPLEMENT THIS
-    	this.utxoPool = utxoPool;
+    	this.utxoPool = new UTXOPool(utxoPool);
     }
 
     /**
@@ -23,37 +26,53 @@ public class TxHandler {
      *     values; and false otherwise.
      */
     public boolean isValidTx(Transaction tx) {
-    	boolean isValid = false;
-    	
-    	// Total outputs by transaction
-    	int totalOutpus = tx.getOutputs().size();
-    	int validOutputsCounter = 0;
-    	int validInputsCounter = 0;
-    	// True if all outputs claimed by {@code tx} are in the current UTXO pool,
-    	boolean outputsExists = false;
-    	boolean allInputSignaturesValid = false;
-
-    	// Check if all outpus are int the poool
     	UTXO uxto = null;
     	int idx = 0;
-    	for(Transaction.Output o: tx.getOutputs()) {
-    		uxto = new UTXO(tx.getHash(), idx);
-    		if (this.utxoPool.contains(uxto)) {
-    			validOutputsCounter++;
-    		}    		
-    	}
-    	if (validOutputsCounter == totalOutpus) {
-    		//all outputs claimed by tx are in the pool
-    		outputsExists = true;
-    	}
-    	
-    	idx = 0;
+    	double totalInputs = 0d;
+    	double totalOutputs = 0d;
+    	List<UTXO> utxoList = new ArrayList<UTXO>();
+
     	for(Transaction.Input i: tx.getInputs()) {
-    		
+    		uxto = new UTXO(i.prevTxHash, i.outputIndex);
+
+            // Check if all outpus are in the unspent transactions pool
+            if (!this.utxoPool.contains(uxto)) {
+                return false;
+            }
+
+            // Getting the output associated to the current input
+            Transaction.Output out = this.utxoPool.getTxOutput(uxto);
+            totalInputs += out.value;
+            if (out == null) return false;
+
+            // check that the signatures on each input of {@code tx} are valid
+            if (!Crypto.verifySignature(out.address, tx.getRawDataToSign(idx), i.signature)) {
+                return false;
+            }
+
+            // check no UTXO is claimed multiple times by {@code tx}
+            if(utxoList.contains(uxto)) {
+                return false;
+            } else {
+                utxoList.add(uxto);
+            }
+
+            idx++;
+
     	}
-    	
-    	isValid = (outputsExists && allInputSignaturesValid);
-    	return isValid;        
+
+    	// checks {@code tx}s output values are non-negative
+    	for(Transaction.Output o: tx.getOutputs()) {
+    	    if (o.value < 0d) {
+    	        return false;
+            }
+            totalOutputs += o.value;
+    	}
+
+        // check if the sum of {@code tx}s input values is greater than or equal to the sum of its output
+    	if (totalOutputs > totalInputs) return false;
+
+    	return true;
     }
 
     /**
