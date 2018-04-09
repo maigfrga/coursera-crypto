@@ -67,14 +67,19 @@ public class IsValidTest {
 	@Test
 	public void testUTXOExistsInPool() throws InvalidKeyException, NoSuchAlgorithmException, SignatureException {
 
-		KeyPair owner = factory.createAddress();
-        KeyPair other = factory.createAddress();
-        KeyPair other2 = factory.createAddress();
+		KeyPair pk_scrooge = factory.createAddress();
+        KeyPair pk_alice = factory.createAddress();
+        KeyPair pk_strange = factory.createAddress();
 
 		// Create a UTXO pool that has an initial root transaction with a valid
         // unspent trasaction
-		UTXOPool pool = factory.createUtxoPool(owner, 10);
+		UTXOPool pool = factory.createUtxoPool(pk_scrooge, 10);
         Transaction rootTransaction = factory.getTransactions().get(0);
+        
+        
+        Map<PublicKey, Double> outputs = new HashMap<>();
+        outputs.put(pk_alice.getPublic(), 5d);
+        Transaction validTransaction = factory.createTransaction(pk_scrooge, outputs);
 
 
 		final TxHandler txHandler = new TxHandler(pool);
@@ -82,9 +87,9 @@ public class IsValidTest {
 		assertTrue(txHandler.isValidTx(rootTransaction));
 
         Map<PublicKey, Double> outputs = new HashMap<>();
-        outputs.put(other.getPublic(), 5d);
+        outputs.put(pk_alice.getPublic(), 5d);
 		// create a spare transaction that is not in the UTXOPool
-        Transaction tx = factory.createTransaction(other2, outputs);
+        Transaction tx = factory.createTransaction(pk_strange, outputs);
         assertFalse(txHandler.isValidTx(tx));
 	}
 
