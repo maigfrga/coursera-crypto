@@ -27,23 +27,32 @@ public class TxHandler {
     	
     	// Total outputs by transaction
     	int totalOutpus = tx.getOutputs().size();
-    	int validTransactionCounter = 0;
+    	int validOutputsCounter = 0;
+    	int validInputsCounter = 0;
     	// True if all outputs claimed by {@code tx} are in the current UTXO pool,
     	boolean outputsExists = false;
+    	boolean allInputSignaturesValid = false;
 
-
-
-    	//for (UXTO uxto: this.utxoPool.getAllUTXO()) {
-    	//
-    	//}
-    	//
-    	//
+    	// Check if all outpus are int the poool
+    	UTXO uxto = null;
+    	int idx = 0;
     	for(Transaction.Output o: tx.getOutputs()) {
-    		if (this.utxoPool.contains()) {
-    			validTransactionCounter++;
-    		}
+    		uxto = new UTXO(tx.getHash(), idx);
+    		if (this.utxoPool.contains(uxto)) {
+    			validOutputsCounter++;
+    		}    		
+    	}
+    	if (validOutputsCounter == totalOutpus) {
+    		//all outputs claimed by tx are in the pool
+    		outputsExists = true;
+    	}
+    	
+    	idx = 0;
+    	for(Transaction.Input i: tx.getInputs()) {
     		
-    	//}
+    	}
+    	
+    	isValid = (outputsExists && allInputSignaturesValid);
     	return isValid;        
     }
 

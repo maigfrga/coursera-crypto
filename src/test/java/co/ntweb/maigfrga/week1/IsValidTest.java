@@ -64,7 +64,6 @@ public class IsValidTest {
 	}
 
 	// Test that that all outputs claimed by a given transaction are in the current UTXO pool
-
 	@Test
 	public void testUTXOExistsInPool() throws InvalidKeyException, NoSuchAlgorithmException, SignatureException {
 
@@ -84,7 +83,7 @@ public class IsValidTest {
 
         Map<PublicKey, Double> outputs = new HashMap<>();
         outputs.put(other.getPublic(), 5d);
-		// create a spare transaction that won't be in the UTXOPool
+		// create a spare transaction that is not in the UTXOPool
         Transaction tx = factory.createTransaction(other2, outputs);
         assertFalse(txHandler.isValidTx(tx));
 	}
