@@ -20,15 +20,15 @@ import co.ntweb.maigfrga.week1.UTXOPool;
 public class TestFactory {
 	private final ThreadLocalRandom random;
 
-    public List<Transaction> getTransactions() {
-        return transactions;
+    public Transaction getTransaction(byte[] hash) {
+        return transactions.get(hash);
     }
 
-    private  List<Transaction> transactions;
+    private  Map<byte[], Transaction> transactions;
 
 	public TestFactory() {
 		this.random = ThreadLocalRandom.current();
-	    this.transactions = new ArrayList<Transaction>();
+	    this.transactions = new HashMap<byte[], Transaction>();
 	}
 
 	public KeyPair createAddress() throws NoSuchAlgorithmException {
@@ -48,7 +48,7 @@ public class TestFactory {
         tx.addInput(initialHash, 0);
 
         tx.finalize();
-        this.transactions.add(tx);
+        this.transactions.put(tx.getHash(), tx);
         return tx;
 	}
 
@@ -69,6 +69,7 @@ public class TestFactory {
 		//}
 
 		tx.finalize();
+		this.transactions.put(tx.getHash(), tx);
 		return tx;
 	}
 
@@ -76,17 +77,21 @@ public class TestFactory {
      * Creates a UTXOPool with an initial unspent transaction
      * @param owner
      * @param initialRootValue
-     * @return UTXOPool
+     * @return Map with the hash of the root transaction and the UTXOPool
      */
-	public UTXOPool createUtxoPool(KeyPair owner, double initialRootValue) {
+	public  Map<byte[], UTXOPool> createUtxoPool(KeyPair owner, double initialRootValue) {
         // The transaction output of the root transaction is the initial unspent output.
         UTXOPool utxoPool = new UTXOPool();
+        Map m = new HashMap<byte[], UTXOPool>();
+        
         if(initialRootValue > 0d && owner != null) {
             Transaction rootTransaction = createRootTransaction(owner, initialRootValue);
             UTXO utxo = new UTXO(rootTransaction.getHash(), 0);
             utxoPool.addUTXO(utxo, rootTransaction.getOutput(0));
+            m.put(rootTransaction.getClass(), utxoPool);
         }
-		return utxoPool;
+        
+		return m;
 	}
 	
 	

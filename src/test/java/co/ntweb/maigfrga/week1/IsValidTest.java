@@ -72,14 +72,21 @@ public class IsValidTest {
         KeyPair pk_strange = factory.createAddress();
 
 		// Create a UTXO pool that has an initial root transaction with a valid
-        // unspent trasaction
-		UTXOPool pool = factory.createUtxoPool(pk_scrooge, 10);
-        Transaction rootTransaction = factory.getTransactions().get(0);
+        // unspent trasaction        
+        Map<byte[], UTXOPool> m = factory.createUtxoPool(pk_scrooge, 10);        
+        byte[] rootHash = (byte[]) m.keySet().toArray()[0];
+		UTXOPool pool = (UTXOPool) m.values().toArray()[0];
+        Transaction rootTransaction = factory.getTransaction(rootHash);
         
+        // List of inputs to create a transaction, every input is a hash of the transaction 
+        // and the output index
+        Map<byte[], Integer> inputs = new HashMap<>();
+        inputs.put(rootTransaction.getHash(), 0);
         
         Map<PublicKey, Double> outputs = new HashMap<>();
         outputs.put(pk_alice.getPublic(), 5d);
-        Transaction validTransaction = factory.createTransaction(pk_scrooge, outputs);
+        
+        Transaction validTransaction = factory.createTransaction(pk_scrooge, inputs, outputs);
 
 
 		final TxHandler txHandler = new TxHandler(pool);
