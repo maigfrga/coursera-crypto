@@ -65,8 +65,11 @@ public class TestFactory {
 		//if ( inputs != null ) {
 		//	for (Transaction.Input input: inputs) {
 		//		tx.addInput(input.prevTxHash, input.);
-		//	}
+		//	}yaamazo@bancolombia.com.co
 		//}
+        
+        
+        if ()
 
 		tx.finalize();
 		this.transactions.put(tx.getHash(), tx);
