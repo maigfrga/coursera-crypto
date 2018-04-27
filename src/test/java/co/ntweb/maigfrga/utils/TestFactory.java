@@ -1,18 +1,12 @@
 package co.ntweb.maigfrga.utils;
 
 import java.math.BigInteger;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.PublicKey;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.security.*;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-import co.ntweb.maigfrga.week1.Main;
 import co.ntweb.maigfrga.week1.Transaction;
 import co.ntweb.maigfrga.week1.UTXO;
 import co.ntweb.maigfrga.week1.UTXOPool;
@@ -39,37 +33,69 @@ public class TestFactory {
      /*
      * Set up the root transaction:
      */
-	public Transaction createRootTransaction(KeyPair owner, double value) {
+	public Transaction createRootTransaction(KeyPair owner, double value)  throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
 		final Transaction tx = new Transaction();
         tx.addOutput(value, owner.getPublic());
 
         // This value has no meaning, but tx.getRawDataToSign(0) will access it in prevTxHash;
         byte[] initialHash = BigInteger.valueOf(0).toByteArray();
         tx.addInput(initialHash, 0);
-
+        byte[] rawData = tx.getRawDataToSign(0);
+        tx.addSignature(sign(owner.getPrivate(), rawData), 0);
         tx.finalize();
         this.transactions.put(tx.getHash(), tx);
         return tx;
 	}
 
-	public Transaction createTransaction(KeyPair sender, Map<PublicKey, Double> outputs) {
+
+
+
+
+    private byte[] sign(PrivateKey privateKey, byte[] rawDataToSign) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+        Signature sig = Signature.getInstance("SHA256withRSA");
+        sig.initSign(privateKey);
+        sig.update(rawDataToSign);
+        return sig.sign();
+    }
+
+
+	public Transaction createTransaction(KeyPair sender, Map<byte[], Integer> inputs, Map<PublicKey, Double> outputs, Map<byte[], Integer> extraInputs )  throws NoSuchAlgorithmException, SignatureException, InvalidKeyException {
 
 		final Transaction tx = new Transaction();
 
+		        // Every output is a value and public key of the receiver
         if (outputs != null) {
             for (Map.Entry<PublicKey, Double> entry : outputs.entrySet()) {
                 tx.addOutput(entry.getValue(), entry.getKey());
             }
         }
 
-		//if ( inputs != null ) {
-		//	for (Transaction.Input input: inputs) {
-		//		tx.addInput(input.prevTxHash, input.);
-		//	}yaamazo@bancolombia.com.co
-		//}
-        
-        
-        if ()
+        int inputIndex = 0;
+        // Every input should correspond to an existing transaction
+		if (inputs != null) {
+
+		    for (Map.Entry<byte [], Integer> entry: inputs.entrySet()) {
+
+                Transaction previousTransaction = this.transactions.get(entry.getKey());
+                Integer previousTransactionOutputIndex =  entry.getValue();
+                tx.addInput(previousTransaction.getHash(), previousTransactionOutputIndex);
+                byte[] rawData = tx.getRawDataToSign(inputIndex);
+                tx.addSignature(sign(sender.getPrivate(), rawData), inputIndex);
+                inputIndex++;
+            }
+        }
+
+        if (extraInputs != null){
+		    for (Map.Entry<byte [], Integer> entry: extraInputs.entrySet()) {
+
+                Transaction previousTransaction = this.transactions.get(entry.getKey());
+                Integer previousTransactionOutputIndex =  entry.getValue();
+                tx.addInput(previousTransaction.getHash(), previousTransactionOutputIndex);
+                byte[] rawData = tx.getRawDataToSign(inputIndex);
+                tx.addSignature(sign(sender.getPrivate(), rawData), inputIndex);
+                inputIndex++;
+            }
+        }
 
 		tx.finalize();
 		this.transactions.put(tx.getHash(), tx);
@@ -82,7 +108,7 @@ public class TestFactory {
      * @param initialRootValue
      * @return Map with the hash of the root transaction and the UTXOPool
      */
-	public  Map<byte[], UTXOPool> createUtxoPool(KeyPair owner, double initialRootValue) {
+	public  Map<byte[], UTXOPool> createUtxoPool(KeyPair owner, double initialRootValue) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         // The transaction output of the root transaction is the initial unspent output.
         UTXOPool utxoPool = new UTXOPool();
         Map m = new HashMap<byte[], UTXOPool>();
@@ -91,45 +117,17 @@ public class TestFactory {
             Transaction rootTransaction = createRootTransaction(owner, initialRootValue);
             UTXO utxo = new UTXO(rootTransaction.getHash(), 0);
             utxoPool.addUTXO(utxo, rootTransaction.getOutput(0));
-            m.put(rootTransaction.getClass(), utxoPool);
+            m.put(rootTransaction.getHash(), utxoPool);
         }
         
 		return m;
 	}
 	
-	
-	public Transaction createTransaction(int maxInputs, int maxOutputs, boolean isValid) {
-		final int nInputs = random.nextInt(maxInputs) + 1;
-		final int nOutputs = random.nextInt(maxOutputs) + 1;
-		Transaction tx = new Transaction();
-		
-		// create inputs
-		//double inputValue = 0;
-		//for (int j = 0; j < nInputs; j++) {
-		//	UTXO utxo = null;
-		//	if (isClaimingOutputsNotInPool && isRandomSelection()) {
-		//		do {
-		//			utxo = utxoExtraList.get(random.nextInt(utxoExtraList.size()));
-		//		} while (!utxosSeen.add(utxo));
-		//		inputValue += utxoExtraPool.getTxOutput(utxo).value;
-		//		corrupted = true;
-		//	} else {
-		//		do {
-		//			utxo = utxoList.get(random.nextInt(utxoList.size()));
-		//		} while (!utxosSeen.add(utxo));
-		//		inputValue += utxoPool.getTxOutput(utxo).value;
-	    //        if (isClaimingUtxoSeveralTimes && isRandomSelection()) {
-	    //            utxosToRepeat.add(utxo);
-	    //            corrupted = true;
-	    //        }
-		//	}
-		//	tx.addInput(utxo.getTxHash(), utxo.getIndex());
-		//	utxoAtIndex.put(j, utxo);
-		//}
-		
-		
-		
-		return tx;
-	}
+
+	public static byte[] createRandomByteArray(int length) {
+        byte[] b = new byte[length];
+        new Random().nextBytes(b);
+        return b;
+    }
 
 }

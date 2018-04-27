@@ -11,6 +11,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.After;
 
+import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.PublicKey;
@@ -73,15 +74,14 @@ public class IsValidTest {
 
 		// Create a UTXO pool that has an initial root transaction with a valid
         // unspent trasaction        
-        Map<byte[], UTXOPool> m = factory.createUtxoPool(pk_scrooge, 10);        
-        byte[] rootHash = (byte[]) m.keySet().toArray()[0];
+        Map<byte[], UTXOPool> m = factory.createUtxoPool(pk_scrooge, 10);
+        byte[] rootHash = (byte[]) (m.keySet().toArray())[0];
 		UTXOPool pool = (UTXOPool) m.values().toArray()[0];
         Transaction rootTransaction = factory.getTransaction(rootHash);
         
-
-        
         // hash of the Transaction whose output is being used
         Map<byte[], Integer> inputs = new HashMap<>();
+        // placing and input that refers to transaction hash and output index that originates the input
         inputs.put(rootTransaction.getHash(), 0);
      
         
@@ -90,20 +90,172 @@ public class IsValidTest {
         Map<PublicKey, Double> outputs = new HashMap<>();
         outputs.put(pk_alice.getPublic(), 5d);
         
-        Transaction validTransaction = factory.createTransaction(pk_scrooge, inputs, outputs);
-
+        Transaction validTransaction = factory.createTransaction(pk_scrooge, inputs, outputs, null);
 
 		final TxHandler txHandler = new TxHandler(pool);
-        // check if root transaction is valid
-		assertTrue(txHandler.isValidTx(rootTransaction));
+        // check if the transaction is valid
+		assertTrue(txHandler.isValidTx(validTransaction));
 
-        Map<PublicKey, Double> outputs = new HashMap<>();
-        outputs.put(pk_alice.getPublic(), 5d);
-		// create a spare transaction that is not in the UTXOPool
-        Transaction tx = factory.createTransaction(pk_strange, outputs);
-        assertFalse(txHandler.isValidTx(tx));
+
+		// Create a second UTXO pool that has an initial root transaction with a valid
+        // unspent trasaction
+        Map<byte[], UTXOPool> m2 = factory.createUtxoPool(pk_alice, 30);
+        byte[] rootHash2 = (byte[]) m2.keySet().toArray()[0];
+		UTXOPool pool2 = (UTXOPool) m2.values().toArray()[0];
+        Transaction rootTransaction2 = factory.getTransaction(rootHash2);
+
+
+		// hash of the Transaction whose output is being used
+        Map<byte[], Integer> inputs2 = new HashMap<>();
+        // placing and input that refers to transaction hash and output index that originates the input
+        // hash of the Transaction whose output is being used
+        // placing and input that refers to transaction hash and output index that originates the input
+        inputs2.put(rootTransaction2.getHash(), 0);
+
+
+        // List of inputs to create a transaction, every input is a hash of the transaction
+        // and the output index
+        Map<PublicKey, Double> outputs2 = new HashMap<>();
+        outputs2.put(pk_bob.getPublic(), 5d);
+
+        Transaction notInPoolTransaction = factory.createTransaction(pk_scrooge, inputs, outputs, null);
+
+		final TxHandler txHandler2 = new TxHandler(pool2);
+        assertFalse(txHandler2.isValidTx(notInPoolTransaction));
 	}
 
+
+
+	// Test if the signatures on each input of {@code tx} are valid
+    @Test
+    public void testInvalidSignatures() throws InvalidKeyException, NoSuchAlgorithmException, SignatureException {
+ 		KeyPair pk_scrooge = factory.createAddress();
+        KeyPair pk_alice = factory.createAddress();
+
+		// Create a UTXO pool that has an initial root transaction with a valid
+        // unspent trasaction
+        Map<byte[], UTXOPool> m = factory.createUtxoPool(pk_scrooge, 10);
+        byte[] rootHash = (byte[]) (m.keySet().toArray())[0];
+		UTXOPool pool = (UTXOPool) m.values().toArray()[0];
+        Transaction rootTransaction = factory.getTransaction(rootHash);
+
+        // hash of the Transaction whose output is being used
+        Map<byte[], Integer> inputs = new HashMap<>();
+        // placing and input that refers to transaction hash and output index that originates the input
+        inputs.put(rootTransaction.getHash(), 0);
+
+
+        // List of inputs to create a transaction, every input is a hash of the transaction
+        // and the output index
+        Map<PublicKey, Double> outputs = new HashMap<>();
+        outputs.put(pk_alice.getPublic(), 5d);
+
+        Transaction validTransaction = factory.createTransaction(pk_scrooge, inputs, outputs, null);
+
+		final TxHandler txHandler = new TxHandler(pool);
+		// assigning an invalid signature to the transaction
+		byte[] fakeSignature = TestFactory.createRandomByteArray(256);
+		validTransaction.addSignature(fakeSignature, 0);
+    	assertFalse(txHandler.isValidTx(validTransaction));
+
+    }
+
+    // test that no UTXO is claimed multiple times.
+    @Test
+    public void testRepeatedUTXO()  throws InvalidKeyException, NoSuchAlgorithmException, SignatureException {
+ 		KeyPair pk_scrooge = factory.createAddress();
+        KeyPair pk_alice = factory.createAddress();
+        KeyPair pk_bob = factory.createAddress();
+
+		// Create a UTXO pool that has an initial root transaction with a valid
+        // unspent trasaction
+        Map<byte[], UTXOPool> m = factory.createUtxoPool(pk_scrooge, 10);
+        byte[] rootHash = (byte[]) (m.keySet().toArray())[0];
+		UTXOPool pool = (UTXOPool) m.values().toArray()[0];
+        Transaction rootTransaction = factory.getTransaction(rootHash);
+
+        // hash of the Transaction whose output is being used
+        Map<byte[], Integer> inputs = new HashMap<>();
+        // placing and input that refers to transaction hash and output index that originates the input
+        inputs.put(rootTransaction.getHash(), 0);
+
+        // input duplication
+        Map<byte[], Integer> extraInputs = new HashMap<>();
+        extraInputs.put(rootTransaction.getHash(), 0);
+        // List of inputs to create a transaction, every input is a hash of the transaction
+        // and the output index
+        Map<PublicKey, Double> outputs = new HashMap<>();
+        outputs.put(pk_alice.getPublic(), 5d);
+        outputs.put(pk_bob.getPublic(), 5d);
+        Transaction validTransaction = factory.createTransaction(pk_scrooge, inputs, outputs, extraInputs);
+
+		final TxHandler txHandler = new TxHandler(pool);
+        // check if the transaction is valid
+		assertFalse(txHandler.isValidTx(validTransaction));
+
+    }
+
+    // test that all of {@code tx}s output values are non-negative
+    @Test
+    public void testNegativeValues() throws InvalidKeyException, NoSuchAlgorithmException, SignatureException {
+    	KeyPair pk_scrooge = factory.createAddress();
+        KeyPair pk_alice = factory.createAddress();
+
+		// Create a UTXO pool that has an initial root transaction with a valid
+        // unspent trasaction
+        Map<byte[], UTXOPool> m = factory.createUtxoPool(pk_scrooge, 10);
+        byte[] rootHash = (byte[]) (m.keySet().toArray())[0];
+		UTXOPool pool = (UTXOPool) m.values().toArray()[0];
+        Transaction rootTransaction = factory.getTransaction(rootHash);
+
+        // hash of the Transaction whose output is being used
+        Map<byte[], Integer> inputs = new HashMap<>();
+        // placing and input that refers to transaction hash and output index that originates the input
+        inputs.put(rootTransaction.getHash(), 0);
+
+
+        // List of inputs to create a transaction, every input is a hash of the transaction
+        // and the output index
+        Map<PublicKey, Double> outputs = new HashMap<>();
+        outputs.put(pk_alice.getPublic(), -5d);
+
+        Transaction validTransaction = factory.createTransaction(pk_scrooge, inputs, outputs, null);
+
+		final TxHandler txHandler = new TxHandler(pool);
+        // check if the transaction is valid
+		assertFalse(txHandler.isValidTx(validTransaction));
+    }
+
+    // test that the sum of {@code tx}s input values is greater than or equal to the sum of its output
+    @Test
+    public void testOverdraft() throws InvalidKeyException, NoSuchAlgorithmException, SignatureException {
+    	KeyPair pk_scrooge = factory.createAddress();
+        KeyPair pk_alice = factory.createAddress();
+
+		// Create a UTXO pool that has an initial root transaction with a valid
+        // unspent trasaction
+        Map<byte[], UTXOPool> m = factory.createUtxoPool(pk_scrooge, 10);
+        byte[] rootHash = (byte[]) (m.keySet().toArray())[0];
+		UTXOPool pool = (UTXOPool) m.values().toArray()[0];
+        Transaction rootTransaction = factory.getTransaction(rootHash);
+
+        // hash of the Transaction whose output is being used
+        Map<byte[], Integer> inputs = new HashMap<>();
+        // placing and input that refers to transaction hash and output index that originates the input
+        inputs.put(rootTransaction.getHash(), 0);
+
+
+        // List of inputs to create a transaction, every input is a hash of the transaction
+        // and the output index
+        Map<PublicKey, Double> outputs = new HashMap<>();
+        outputs.put(pk_alice.getPublic(), 15d);
+
+        Transaction validTransaction = factory.createTransaction(pk_scrooge, inputs, outputs, null);
+
+		final TxHandler txHandler = new TxHandler(pool);
+        // check if the transaction is valid
+		assertFalse(txHandler.isValidTx(validTransaction));
+    }
 	// Test 1: test isValidTx() with valid transactions
 	@Test
 	public void testIsValidWithValidTransactions()
