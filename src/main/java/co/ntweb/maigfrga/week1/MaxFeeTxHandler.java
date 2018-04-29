@@ -135,36 +135,26 @@ public class MaxFeeTxHandler {
      * @return
      */
 
-    private Transaction maximizeTransactionFees(List<Transaction> transactionList) {
-        Transaction best = transactionList.get(0);
-        double bestFee = 0d;
-        UTXO uxto;
+    private Double computeFees(Transaction t) {
+        
+        double fee = 0d;
+        UTXO utxo = null;    
 
-        for(Transaction t: transactionList) {
-            double currentFee = 0d;
+        for(Transaction.Input input: t.getInputs()) {
+            utxo = new UTXO(input.prevTxHash, input.outputIndex);
 
-            for(Transaction.Input input: t.getInputs()) {
-                uxto = new UTXO(input.prevTxHash, input.outputIndex);
-
-                // Getting the output associated to the current input
-                Transaction.Output out = this.utxoPool.getTxOutput(uxto);
-                if (out == null) continue;
-                currentFee += out.value;
-            }
-
-            int outIndex = 0;
-            for(Transaction.Output output: t.getOutputs()) {
-                currentFee -= output.value;
-            }
-
-            if(currentFee > bestFee) {
-                best = t;
-                bestFee = currentFee;
-            }
-
-            currentFee = 0d;
+            // Getting the output associated to the current input
+            Transaction.Output out = this.utxoPool.getTxOutput(utxo);
+            if (out == null) continue;
+            fee += out.value;
         }
-        return best;
+
+            
+        for(Transaction.Output output: t.getOutputs()) {
+            fee -= output.value;
+        }
+        
+        return fee;
     }
 
 
@@ -176,55 +166,44 @@ public class MaxFeeTxHandler {
      */
     public Transaction[] handleTxs(Transaction[] possibleTxs) {
         if (possibleTxs == null || possibleTxs.length == 0) return null;
+        
+        Set<Transaction> sortedTransactions = new TreeSet<>((t1, t2) -> {
+            double t1Fees = computeFees(t1);
+            double t2Fees = computeFees(t2);
+            return Double.valueOf(t2Fees).compareTo(t1Fees);
+        });
+        
+        Collections.addAll(sortedTransactions, possibleTxs);
 
-        Map<UTXO, List<Transaction>> utxoTransactions = new HashMap<>();
-        Transaction t = null;
-        List<Transaction> tList = new ArrayList<Transaction>();
-        UTXO uxto = null;
-
-
-        // First step is to indentify transactions that try to access same unspent transaction
-        for(int i=0; i< possibleTxs.length; i++) {
-            t = possibleTxs[i];
-
+        UTXO utxo = null;
+        List<Transaction> tList = new ArrayList<>();
+        for(Transaction t: sortedTransactions) {            
             if (this.isValidTx(t)) {
+
                 for(Transaction.Input input: t.getInputs()) {
-                    uxto = new UTXO(input.prevTxHash, input.outputIndex);
-
-                    if(utxoTransactions.containsKey(uxto)) {
-                        utxoTransactions.get(uxto).add(t);
-                    } else {
-                        List<Transaction> tl = new ArrayList<>();
-                        tl.add(t);
-                        utxoTransactions.put(uxto, tl);
-                    }
-
+                    utxo = new UTXO(input.prevTxHash, input.outputIndex);
+                    // Getting the output associated to the current input
+                    Transaction.Output out = this.utxoPool.getTxOutput(utxo);
+                    if (out == null) continue;
+                    
+                    this.utxoPool.removeUTXO(utxo);
                 }
+
+                int outIndex = 0;
+                for(Transaction.Output output: t.getOutputs()) {
+                    utxo = new UTXO(t.getHash(), outIndex);
+                    outIndex++;
+                    this.utxoPool.addUTXO(utxo, output);
+                    
+                }
+                utxo = null;
+
+                tList.add(t);
             }
-
-            t = null;
+            
         }
-
-        List<Transaction> transactionsToProcess = new ArrayList<>();
-
-        // getting a final list of transactions to process
-        for(List<Transaction> l: utxoTransactions.values()) {
-
-            // If there is only one transaction that refers to a particular unspent transaction , add to the
-            // possible transaction list, otherwise, add the most profitable transaction
-            if(l.size() == 1) {
-                transactionsToProcess.add(l.get(0));
-            } else {
-                transactionsToProcess.add(maximizeTransactionFees(l));
-            }
-        }
-
-        Transaction[] tArray = new Transaction[transactionsToProcess.size()];
-        int idx = 0;
-        for(Transaction transaction: transactionsToProcess) {
-            tArray[idx] = transaction;
-            idx++;
-        }
-        return handleMaxTxs(tArray);
+        Transaction[] tArray = new Transaction[tList.size()];
+        return tList.toArray(tArray);        
+        
     }
 }
