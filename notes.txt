@@ -1,3 +1,5 @@
+Notes from https://www.coursera.org/learn/cryptocurrency/home/welcome
+
 Cryptographic hash functions
 
 - Is a mathematical function
@@ -99,4 +101,27 @@ Hash Pointers and Data Structures
         Variant: Sorted Merkle tree
           - Can verify not membership i O(log n)
 
-          
+
+
+
+Digital Signature:
+    - Only you can sing, but anyone can verify.
+    - Signature is tied to a particular document.
+
+    Digital Signatures API
+        - (sk, pk) := generateKeys(keysize)
+            - sk: secret key
+            - pk: public key
+
+        - sig := sign(sk,message)
+
+        - isValid := verify(pk, message, sig)
+
+
+    Requirements for signatures
+
+        - verify(pk, message, sign(sk, message)) == true    # Valid signatures verify
+        - Can not forge signatures # adversary who knows pk and signatures can not produce valid signatures
+        - Algorithms need a good source of randomness
+        - Limit no message size. Fix: use Hash(message) rather than message.
+        - Trick: Sign a hash pointer and signature will cover the whole structure
