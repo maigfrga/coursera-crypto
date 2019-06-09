@@ -1,0 +1,102 @@
+Cryptographic hash functions
+
+- Is a mathematical function
+  - It has three attributes
+
+    - It Can take any string as input, absolutely any string of any size
+
+    - It produces a fixed-size output
+
+    - It has to be efficiently computable: given an input, compute the output
+      in a razonable amount of time
+
+  - Security properties
+
+    - Collision Free:  H(x) never will be equal H(y) |  x != y , collisions exists, but
+      is hard to anyone to find them. The mathemacil operation that makes possible to find
+      a collition takes several hundred million years
+
+    - Hiding: Giving H(X) it is very hard to find the original value of X. If r is chosen from
+      a probability distribution that has high min-entropy, then G(r|H) it is infeasible to find X.
+      The concept is to find a random enough r value that will be concatenanted to the original X
+
+    - Puzzle friendly: for every possible output value y, if k is chosen from a distribution with
+      high min entropy, then is infeasible to find x such that H(k|x) = y.
+      Puzzle friendly property implies that not solving strategy is better than trying random
+      values of X.
+
+
+
+  - Application: Hash a message digest
+
+    - If we know that x and y have the same hash. Then it's safe to assume that x and y are the same.
+    - To recongnize a file previously viewed by its hash.
+    Then if someone shows us a new file, and claims that it's the same, we can compute the hash of that
+    new file and compare the hashes. If the hashes are the same, then we conclude that the files
+    must have been the same.
+    This is useful because the hash is small, it's only 256 bits, while the original
+    file might be really big. So hash is useful as a message digest
+
+
+  - Application: commitment
+
+    - Want to "seal a value in an envelope" and "open the envelope" later.
+    - commit to a value, reveal it later.
+
+    Commitment API
+      (com, key) := commit(msg)
+      match :+=  verify(com, key, msg)
+
+      To seal msg in envelope:
+        (com, key) := commit(msg) -- then publish com
+
+        commit(msg) := (H(key | msg), key) where key is a random 256 bit value
+        verify(com, key, msg) := (H(key|msg) == com)
+
+      To open the envelope:
+        publish key, msg
+        Anyone can use verify to chechk validity
+
+      Security Properties:
+        - Hiding: Given H(key|msg), infeasible to find msg
+        - Binding: Infeasible to find msg != msg' such that 
+          H(key|msg) == H(key|msg')
+
+
+  - Application: Search Puzzle
+    Given a "puzzle ID" (from a high min entropy distribution) and a target set Y:
+
+    Try to find a solution x such that: 
+    H(id|x) in Y
+
+
+
+
+Hash Pointers and Data Structures
+  - Hash pointer
+    - Is a data structure that contains:
+      - Pointer to where some info is stored
+      - Cryptographic hash of the info
+
+    - If we have a hash pointer we can:
+      - Ask to get the info back.
+      - Verify if the info has not changed
+
+     - Key idea: Build all king of data structures from Hash pointers (Linked List, Binary Tree - Merkle tree)
+
+       - Blockchain
+         - Linked List containing a series of blocks
+         - Every block has data and a Hash pointer to the previous block
+         - The head of each block is the hash of the previous block
+         - Blockchains provides tampering detection as a modification of a block will change the hash
+         - As hash is collition free, infeasible to modify a block and get the same hash
+
+      - Binary Tree - Merkle Tree
+        - Binary Tree with hash pointers
+        - Merkle tree search complexity: O(log n)
+        - Tree can have many items but only needs to remember the root hash
+
+        Variant: Sorted Merkle tree
+          - Can verify not membership i O(log n)
+
+          
