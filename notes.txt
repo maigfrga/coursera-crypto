@@ -104,7 +104,7 @@ Hash Pointers and Data Structures
 
 
 
-Digital Signature:
+Digital Signatures:
     - Only you can sing, but anyone can verify.
     - Signature is tied to a particular document.
 
@@ -125,3 +125,79 @@ Digital Signature:
         - Algorithms need a good source of randomness
         - Limit no message size. Fix: use Hash(message) rather than message.
         - Trick: Sign a hash pointer and signature will cover the whole structure
+
+
+Public Keys as Identities
+    - Useful trick: public key == an identity
+    - (verify(pk, msg, sig) == true) is similar to "pk says msg"
+    - Only the owner of the secret key sd associated to pk can genrate a message
+
+    How to make an Identity
+        - Create a enw random key-pair (sk, pk)
+        - pk is the public name you can use
+        - sk "speak for" the identity
+        - Because pk-sk are random, nobody knows who is the owner of a set.
+        - pk are too long, ususally they are distributed as Hash(pk)
+        - How knows/owns the sk, controls the identity.
+
+    Decentralized indentity management
+        - Anybody can make a new identity at any time
+        - Make as many as you want.
+        - No central point of coordination
+        - This identities are call "addresses" in bitcoin.
+
+    Privacy
+        - Addresses not directly connected to the real world identity
+        - Observer can link together an address'activity over time, make inferences
+
+
+A Simple Crytocurrency (Goofy Coin)
+
+    - Goofy can create a new coin whenever he wants and his signature over that newly created coin
+      is the proof of ownership:
+        - signed by pk (goofy) -> CreateCoin[uniqueCoinID]
+        - Anyone can verify if the coin's owner is goofy by running the verify function over the hash of the coin
+          signature.
+
+    - However owns a coin can transfer its ownership (spend the coin)
+        - signed by pk(goofy) -> pay to pk(alice): H(signed by pk (goofy) -> CreateCoin[uniqueCoinID])
+
+        - alice can now transfer this coin to whoever she wants
+            signed by pk(alice) -> pay to pk(bob): H(signed by pk(goofy) -> pay to pk(alice))
+
+        - The payment is valid as proof of ownership can be provided by alice 
+
+     Double Spending attack
+
+        - Lets say alice pays 2 different people with the same coin:
+            signed by pk(alice) -> pay to pk(bob): H(signed by pk(goofy) -> pay to pk(alice))
+            signed by pk(alice) -> pay to pk(chuk): H(signed by pk(goofy) -> pay to pk(alice))
+        - Double Spending attack is one of the biggest challenges in designing digital currrencies
+
+
+Scrooge Coin
+    - It solves double spending attack
+    - Scrooge publishes a history of all transactions (a blockchain, signed by Scrooge)
+    - The blockchain is a list of blocks, each block has its own transaction ID and is digitally signed
+    - Every block have the transactions and the Hash pointer to the previous block in the history
+    - The history allows to detect double spending
+    - The first payment is made succesfully and the operation is writen in the blockchain
+    - During the second payment, a check in the history detects that the coin has been already spent
+
+    Scrooge Coin Transactions
+        - Create Coins: A single transaction can create multiple coins:
+        Example:
+            transId: 73 type: createCoins
+            ------------------------------
+                    coins created
+            ------------------------------
+            num    |  value     | recipient
+            ===============================
+            0      | 3.2        | 0x...      <- coinId 73(0)
+            1      | 1.4        | 0x...      <- coinId 73(1)
+            2      | 7.1        | 0x...      <- coinId 73(2)
+
+            A create coin transaction is always valid as Scrooge is the only one who can
+            create and signs coins.
+
+        - PayCoins
