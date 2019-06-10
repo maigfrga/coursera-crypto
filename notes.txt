@@ -200,4 +200,30 @@ Scrooge Coin
             A create coin transaction is always valid as Scrooge is the only one who can
             create and signs coins.
 
-        - PayCoins
+        - PayCoins: Consumes and destroys same coins, creates new coins of the same total value
+            Valid if:
+                - Consumed coins are valid
+                - Not already consumed
+                - Total value out = Total value in
+                - Signed by owners of all cnosumed coins
+
+           Example:
+        Example:
+            transId: 73 type: PayCoins
+            ------------------------------
+                Consumed coinIds:
+                    68(1), 42(0), 72(3)
+            ------------------------------
+                    coins created
+            ------------------------------
+            num    |  value     | recipient
+            ===============================
+            0      | 3.2        | 0x...      <- coinId 73(0)
+            1      | 1.4        | 0x...      <- coinId 73(1)
+            2      | 7.1        | 0x...      <- coinId 73(2)
+            ==================================
+            Signatures
+
+
+    Immutable Coins
+        - Coins can not be transfered, subdivided, or combined.
