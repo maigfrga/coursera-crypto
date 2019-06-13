@@ -1,10 +1,17 @@
 package co.ntweb.maigfrga.week1;
 
 import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.security.PrivateKey;
 import java.security.Signature;
 import java.security.SignatureException;
+
+
+
+
 
 public class Crypto {
 
@@ -35,4 +42,17 @@ public class Crypto {
         return false;
 
     }
+    
+    public static KeyPair generateKeys() throws NoSuchAlgorithmException {
+    	return KeyPairGenerator.getInstance("RSA").generateKeyPair();
+    }
+    
+    public static byte[] sign(PrivateKey sk, byte[] message) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+    	Signature sig = Signature.getInstance("SHA256withRSA");
+        sig.initSign(sk);
+        sig.update(message);
+    	return sig.sign();
+    }
+    
+ 
 }
