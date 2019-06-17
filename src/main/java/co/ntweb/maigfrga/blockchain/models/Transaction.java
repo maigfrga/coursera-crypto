@@ -1,11 +1,18 @@
-package co.ntweb.maigfrga.week1;
+package co.ntweb.maigfrga.blockchain.models;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import com.google.common.collect.ImmutableList;
+
+import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.Signature;
+import java.security.SignatureException;
 
 /**
  * A transaction consists of a list of inputs, a list of outputs and a unique ID (see the ​ getRawTx()
@@ -18,103 +25,24 @@ import java.security.PublicKey;
 
 public class Transaction {
 
-	
-	/**
-	 * A transaction input consists of the hash of the transaction that contains the corresponding
-	 * output, the index of this output in that transaction (indices are simply integers starting from 0),
-	 * and a digital signature. For the input to be valid, the signature it contains must be a valid signature
-	 * over the current transaction with the public key in the spent output.
-	 * @author manuel
-	 *
-	 */
-    public class Input {
-        /** hash of the Transaction whose output is being used */
-        public byte[] prevTxHash;
-        /** used output's index in the previous transaction */
-        public int outputIndex;
-        /** the signature produced to check validity */
-        public byte[] signature;
-
-        public Input(byte[] prevHash, int index) {
-            if (prevHash == null)
-                this.prevTxHash = null;
-            else
-                this.prevTxHash = Arrays.copyOf(prevHash, prevHash.length);
-            this.outputIndex = index;
-        }
-
-        public void addSignature(byte[] sig) {
-            if (sig == null)
-                signature = null;
-            else
-                signature = Arrays.copyOf(sig, sig.length);
-        }
-    }
-
-    
-    /**
-     * A transaction output consists of a value and a public key to which it is being paid.
-     * For the public keys, we use the built-in Java ​ PublicKey ​ class
-     * @author manuel
-     *
-     */
-    public class Output {
-        /** value in bitcoins of the output */
-        public double value;
-        /** the address or public key of the recipient */
-        public PublicKey address;
-
-        public Output(double v, PublicKey addr) {
-            value = v;
-            address = addr;
-        }
-    }
-
     /** hash of the transaction, its unique id */
     private byte[] hash;
-    private ArrayList<Input> inputs;
-    private ArrayList<Output> outputs;
+    private  List<Input> inputs;
+    private  List<Output> outputs;
 
-    public Transaction() {
-        inputs = new ArrayList<Input>();
-        outputs = new ArrayList<Output>();
-    }
 
-    public Transaction(Transaction tx) {
-        hash = tx.hash.clone();
-        inputs = new ArrayList<Input>(tx.inputs);
-        outputs = new ArrayList<Output>(tx.outputs);
+    public Transaction(List<Input> inputs, List<Output> outpus) {
+    	this.inputs = ImmutableList.copyOf(inputs);
+    	this.outputs = ImmutableList.copyOf(outpus);
+    	
     }
+    
 
-    public void addInput(byte[] prevTxHash, int outputIndex) {
-        Input in = new Input(prevTxHash, outputIndex);
-        inputs.add(in);
-    }
-
-    public void addOutput(double value, PublicKey address) {
-        Output op = new Output(value, address);
-        outputs.add(op);
-    }
-
-    public void removeInput(int index) {
-        inputs.remove(index);
-    }
-
-    public void removeInput(UTXO ut) {
-        for (int i = 0; i < inputs.size(); i++) {
-            Input in = inputs.get(i);
-            UTXO u = new UTXO(in.prevTxHash, in.outputIndex);
-            if (u.equals(ut)) {
-                inputs.remove(i);
-                return;
-            }
-        }
-    }
 
     public byte[] getRawDataToSign(int index) {
         // ith input and all outputs
         ArrayList<Byte> sigData = new ArrayList<Byte>();
-        if (index > inputs.size())
+        /*if (index > inputs.size())
             return null;
         Input in = inputs.get(index);
         byte[] prevTxHash = in.prevTxHash;
@@ -142,14 +70,14 @@ public class Transaction {
         for (Byte sb : sigData)
             sigD[i++] = sb;
         return sigD;
+        */
+        return null;
     }
 
-    public void addSignature(byte[] signature, int index) {
-        inputs.get(index).addSignature(signature);
-    }
 
     public byte[] getRawTx() {
         ArrayList<Byte> rawTx = new ArrayList<Byte>();
+        /*
         for (Input in : inputs) {
             byte[] prevTxHash = in.prevTxHash;
             ByteBuffer b = ByteBuffer.allocate(Integer.SIZE / 8);
@@ -182,32 +110,50 @@ public class Transaction {
         int i = 0;
         for (Byte b : rawTx)
             tx[i++] = b;
-        return tx;
+             return tx;
+        */
+       return null;
     }
 
-    public void finalize() {
+    public void sign() {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             md.update(getRawTx());
-            hash = md.digest();
+            this.hash = md.digest();
         } catch (NoSuchAlgorithmException x) {
             x.printStackTrace(System.err);
         }
     }
 
-    public void setHash(byte[] h) {
-        hash = h;
+    
+    public void signTx(PrivateKey sk, int input) throws SignatureException {
+        Signature sig = null;
+        try {
+            sig = Signature.getInstance("SHA256withRSA");
+            sig.initSign(sk);
+            sig.update(this.getRawDataToSign(input));
+        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
+            throw new RuntimeException(e);
+        }
+        //this.addSignature(sig.sign(),input);
+        // Note that this method is incorrectly named, and should not in fact override the Java
+        // object finalize garbage collection related method.
+        this.sign();
     }
+    
+    
+    
+    
 
     public byte[] getHash() {
         return hash;
     }
 
-    public ArrayList<Input> getInputs() {
+    public List<Input> getInputs() {
         return inputs;
     }
 
-    public ArrayList<Output> getOutputs() {
+    public List<Output> getOutputs() {
         return outputs;
     }
 
@@ -225,11 +171,5 @@ public class Transaction {
         return null;
     }
 
-    public int numInputs() {
-        return inputs.size();
-    }
 
-    public int numOutputs() {
-        return outputs.size();
-    }
 }

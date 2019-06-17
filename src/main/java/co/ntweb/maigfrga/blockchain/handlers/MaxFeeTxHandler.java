@@ -1,6 +1,14 @@
-package co.ntweb.maigfrga.week1;
+package co.ntweb.maigfrga.blockchain.handlers;
 
 import java.util.*;
+
+import co.ntweb.maigfrga.blockchain.Crypto;
+import co.ntweb.maigfrga.blockchain.models.Input;
+import co.ntweb.maigfrga.blockchain.models.Output;
+import co.ntweb.maigfrga.blockchain.models.Transaction;
+import co.ntweb.maigfrga.blockchain.models.UTXO;
+import co.ntweb.maigfrga.blockchain.models.UTXOPool;
+
 
 public class MaxFeeTxHandler {
 
@@ -31,8 +39,8 @@ public class MaxFeeTxHandler {
 
         if(null == tx) return false;
 
-    	for(Transaction.Input i: tx.getInputs()) {
-    		uxto = new UTXO(i.prevTxHash, i.outputIndex);
+    	for(Input i: tx.getInputs()) {
+    		uxto = new UTXO(i.getPrevTxHash(), i.getOutputIndex());
 
             // Check if all outpus are in the unspent transactions pool
             if (!this.utxoPool.contains(uxto)) {
@@ -40,13 +48,13 @@ public class MaxFeeTxHandler {
             }
 
             // Getting the output associated to the current input
-            Transaction.Output out = this.utxoPool.getTxOutput(uxto);
+            Output out = this.utxoPool.getTxOutput(uxto);
             if (out == null) return false;
-            totalInputs += out.value;
+            totalInputs += out.getValue();
 
 
             // check that the signatures on each input of {@code tx} are valid
-            if (!Crypto.verifySignature(out.address, tx.getRawDataToSign(idx), i.signature)) {
+            if (!Crypto.verifySignature(out.getAddress(), tx.getRawDataToSign(idx), i.getSignature())) {
                 return false;
             }
 
@@ -62,11 +70,11 @@ public class MaxFeeTxHandler {
     	}
 
     	// checks {@code tx}s output values are non-negative
-    	for(Transaction.Output o: tx.getOutputs()) {
-    	    if (o.value < 0d) {
+    	for(Output o: tx.getOutputs()) {
+    	    if (o.getValue() < 0d) {
     	        return false;
             }
-            totalOutputs += o.value;
+            totalOutputs += o.getValue();
     	}
 
         // check if the sum of {@code tx}s input values is greater than or equal to the sum of its output
@@ -94,22 +102,22 @@ public class MaxFeeTxHandler {
                 double totalInputs = 0d;
                 double totalOutpus = 0d;
 
-                for(Transaction.Input input: t.getInputs()) {
-                    uxto = new UTXO(input.prevTxHash, input.outputIndex);
+                for(Input input: t.getInputs()) {
+                    uxto = new UTXO(input.getPrevTxHash(), input.getOutputIndex());
 
                     // Getting the output associated to the current input
-                    Transaction.Output out = this.utxoPool.getTxOutput(uxto);
+                    Output out = this.utxoPool.getTxOutput(uxto);
                     if (out == null) continue;
-                    totalInputs += out.value;
+                    totalInputs += out.getValue();
                     this.utxoPool.removeUTXO(uxto);
                 }
 
                 int outIndex = 0;
-                for(Transaction.Output output: t.getOutputs()) {
+                for(Output output: t.getOutputs()) {
                     uxto = new UTXO(t.getHash(), outIndex);
                     outIndex++;
                     this.utxoPool.addUTXO(uxto, output);
-                    totalOutpus += output.value;
+                    totalOutpus += output.getValue();
                 }
                 uxto = null;
 
@@ -140,18 +148,18 @@ public class MaxFeeTxHandler {
         double fee = 0d;
         UTXO utxo = null;    
 
-        for(Transaction.Input input: t.getInputs()) {
-            utxo = new UTXO(input.prevTxHash, input.outputIndex);
+        for(Input input: t.getInputs()) {
+            utxo = new UTXO(input.getPrevTxHash(), input.getOutputIndex());
 
             // Getting the output associated to the current input
-            Transaction.Output out = this.utxoPool.getTxOutput(utxo);
+            Output out = this.utxoPool.getTxOutput(utxo);
             if (out == null) continue;
-            fee += out.value;
+            fee += out.getValue();
         }
 
             
-        for(Transaction.Output output: t.getOutputs()) {
-            fee -= output.value;
+        for(Output output: t.getOutputs()) {
+            fee -= output.getValue();
         }
         
         return fee;
@@ -180,17 +188,17 @@ public class MaxFeeTxHandler {
         for(Transaction t: sortedTransactions) {            
             if (this.isValidTx(t)) {
 
-                for(Transaction.Input input: t.getInputs()) {
-                    utxo = new UTXO(input.prevTxHash, input.outputIndex);
+                for(Input input: t.getInputs()) {
+                    utxo = new UTXO(input.getPrevTxHash(), input.getOutputIndex());
                     // Getting the output associated to the current input
-                    Transaction.Output out = this.utxoPool.getTxOutput(utxo);
+                    Output out = this.utxoPool.getTxOutput(utxo);
                     if (out == null) continue;
                     
                     this.utxoPool.removeUTXO(utxo);
                 }
 
                 int outIndex = 0;
-                for(Transaction.Output output: t.getOutputs()) {
+                for(Output output: t.getOutputs()) {
                     utxo = new UTXO(t.getHash(), outIndex);
                     outIndex++;
                     this.utxoPool.addUTXO(utxo, output);

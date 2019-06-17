@@ -1,4 +1,4 @@
-package co.ntweb.maigfrga.week1;
+package co.ntweb.maigfrga.blockchain;
 
 // Copyright (C) 2016-2017 Enrique Albertos
 // Distributed under the GNU GPL v2 software license
@@ -20,7 +20,11 @@ import java.security.SignatureException;
 import java.util.HashMap;
 import java.util.Map;
 
-import co.ntweb.maigfrga.utils.TestFactory;
+import co.ntweb.maigfrga.blockchain.handlers.TxHandler;
+import co.ntweb.maigfrga.blockchain.models.Transaction;
+import co.ntweb.maigfrga.blockchain.models.UTXOPool;
+import co.ntweb.maigfrga.blockchian.utils.TestFactory;
+
 import org.junit.Test;
 /**
  * Unit tests for {@link TxHandler#isValidTx(Transaction)}

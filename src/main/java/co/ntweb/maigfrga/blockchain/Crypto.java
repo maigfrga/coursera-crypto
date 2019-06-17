@@ -1,4 +1,4 @@
-package co.ntweb.maigfrga.week1;
+package co.ntweb.maigfrga.blockchain;
 
 import java.security.InvalidKeyException;
 import java.security.KeyPair;

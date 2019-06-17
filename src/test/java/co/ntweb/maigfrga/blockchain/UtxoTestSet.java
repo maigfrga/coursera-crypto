@@ -1,4 +1,4 @@
-package co.ntweb.maigfrga.week1;
+package co.ntweb.maigfrga.blockchain;
 
 // Copyright (C) 2016-2017 Enrique Albertos
 // Distributed under the GNU GPL v2 software license
@@ -19,6 +19,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
+
+import co.ntweb.maigfrga.blockchain.models.Transaction;
+import co.ntweb.maigfrga.blockchain.models.UTXO;
+import co.ntweb.maigfrga.blockchain.models.UTXOPool;
 
 /**
  * UtxoTestSet represent a random created data test set for testing isValid and txHandler methods.
@@ -351,7 +355,7 @@ public class UtxoTestSet {
 			tx.addOutput(value, addr);
 			keyPairAtIndex.put(j, people.get(rIndex));
 		}
-		tx.finalize();
+		tx.sign();
 		return tx;
 	}
 
@@ -489,7 +493,7 @@ public class UtxoTestSet {
 				}
 				tx.addSignature(sign(privateKey, rawData), j);
 			}
-			tx.finalize();
+			tx.sign();
 
 			if (corrupted){
 				invalid.add(tx);

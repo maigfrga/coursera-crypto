@@ -1,4 +1,4 @@
-package co.ntweb.maigfrga.utils;
+package co.ntweb.maigfrga.blockchian.utils;
 
 import java.math.BigInteger;
 import java.security.*;
@@ -7,9 +7,9 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-import co.ntweb.maigfrga.week1.Transaction;
-import co.ntweb.maigfrga.week1.UTXO;
-import co.ntweb.maigfrga.week1.UTXOPool;
+import co.ntweb.maigfrga.blockchain.models.Transaction;
+import co.ntweb.maigfrga.blockchain.models.UTXO;
+import co.ntweb.maigfrga.blockchain.models.UTXOPool;
 
 public class TestFactory {
 	private final ThreadLocalRandom random;
@@ -42,7 +42,7 @@ public class TestFactory {
         tx.addInput(initialHash, 0);
         byte[] rawData = tx.getRawDataToSign(0);
         tx.addSignature(sign(owner.getPrivate(), rawData), 0);
-        tx.finalize();
+        tx.sign();
         this.transactions.put(tx.getHash(), tx);
         return tx;
 	}
@@ -97,7 +97,7 @@ public class TestFactory {
             }
         }
 
-		tx.finalize();
+		tx.sign();
 		this.transactions.put(tx.getHash(), tx);
 		return tx;
 	}

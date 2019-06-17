@@ -1,4 +1,4 @@
-package co.ntweb.maigfrga.week1;
+package co.ntweb.maigfrga.blockchain;
 
 import static org.junit.Assert.*;
 
@@ -12,6 +12,8 @@ import java.security.Signature;
 import java.security.SignatureException;
 
 import org.junit.Test;
+
+import co.ntweb.maigfrga.blockchain.Crypto;
 
 
 /**

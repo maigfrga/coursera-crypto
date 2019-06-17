@@ -1,4 +1,4 @@
-package co.ntweb.maigfrga.week1;
+package co.ntweb.maigfrga.blockchain;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -14,8 +14,13 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.util.HashMap;
 import java.util.Map;
+import co.ntweb.maigfrga.blockchain.handlers.MaxFeeTxHandler;
+import co.ntweb.maigfrga.blockchain.handlers.TxHandler;
+import co.ntweb.maigfrga.blockchain.models.Transaction;
+import co.ntweb.maigfrga.blockchain.models.UTXO;
+import co.ntweb.maigfrga.blockchain.models.UTXOPool;
+import co.ntweb.maigfrga.blockchian.utils.TestFactory;
 
-import co.ntweb.maigfrga.utils.TestFactory;
 import org.junit.Test;
 
 public class TestHandleTx {
