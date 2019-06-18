@@ -23,7 +23,7 @@ import java.security.SignatureException;
  *
  */
 
-public class Transaction {
+public class Transaction implements Imodel {
 
     /** hash of the transaction, its unique id */
     private byte[] hash;
@@ -141,7 +141,52 @@ public class Transaction {
         this.sign();
     }
     
+    public void signInput(PrivateKey sk, int index) throws InvalidKeyException, NoSuchAlgorithmException, SignatureException {
+    	ArrayList<Byte> rawOutputData = new ArrayList<Byte>();
+    	
+		for (Output out: this.outputs) {
+			for(byte b: out.getRawData()) {
+				rawOutputData.add(b);
+			}
+		}
+
+		byte[] rawOutpus = new byte[rawOutputData.size()];
+		int i = 0;
+		for (Byte b : rawOutputData)
+		    rawOutpus[i++] = b;
+
+		Input in = this.inputs.get(index);
+		in.sign(sk, rawOutpus);
+		
+		
+    	
+    }
     
+	@Override
+	public byte[] getRawData() {
+		ArrayList<Byte> rawData = new ArrayList<Byte>();
+		
+		
+		for (Input in : this.inputs) {
+			for(byte b: in.getRawData()) {
+				rawData.add(b);
+			}
+		}
+		
+		for (Output out: this.outputs) {
+			for(byte b: out.getRawData()) {
+				rawData.add(b);
+			}
+		}
+		
+        byte[] raw = new byte[rawData.size()];
+	    int i = 0;
+	    for (Byte b : rawData)
+	    	raw[i++] = b;
+		 
+		return raw;
+		
+	} 
     
     
 
@@ -157,19 +202,9 @@ public class Transaction {
         return outputs;
     }
 
-    public Input getInput(int index) {
-        if (index < inputs.size()) {
-            return inputs.get(index);
-        }
-        return null;
-    }
 
-    public Output getOutput(int index) {
-        if (index < outputs.size()) {
-            return outputs.get(index);
-        }
-        return null;
-    }
+
+
 
 
 }

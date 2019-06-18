@@ -50,7 +50,7 @@ public class Input implements Imodel {
         this.outputIndex = outputIndex;
     }
 
-	private byte[] sign(PrivateKey sk) throws InvalidKeyException, NoSuchAlgorithmException, SignatureException {
+	public byte[] sign(PrivateKey sk, byte[] rawOutputs )  throws InvalidKeyException, NoSuchAlgorithmException, SignatureException {
 		ArrayList<Byte> rawData = new ArrayList<Byte>();
 		
 		for (int i = 0; i < this.prevTxHash.length; i++)
