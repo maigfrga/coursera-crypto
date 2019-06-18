@@ -1,9 +1,17 @@
 package co.ntweb.maigfrga.blockchain.models;
 
 import java.nio.ByteBuffer;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import com.google.common.base.Preconditions;
+
+
+
+import co.ntweb.maigfrga.blockchain.Crypto;
 
 
 /**
@@ -36,31 +44,17 @@ public class Input implements Imodel {
 		return signature;
 	}
 
-	public Input(byte[] prevHash, int outputIndex) {
+	public Input(byte[] prevHash, int outputIndex) throws InvalidKeyException, NoSuchAlgorithmException, SignatureException {
+		Preconditions.checkNotNull(prevHash);
         this.prevTxHash = Arrays.copyOf(prevHash, prevHash.length);
         this.outputIndex = outputIndex;
-        //this.signature =  Arrays.copyOf(signature, signature.length);
     }
 
-    public void sign(byte[] sig) {
-        if (sig == null)
-            this.signature = null;
-        else
-            this.signature = Arrays.copyOf(sig, sig.length);
-    }
-
-	@Override
-	public byte[] getRawData() {
-		// TODO Auto-generated method stub
-		
-		//ByteBuffer b = ByteBuffer.allocate(Integer.SIZE / BYTE_SIZE);
-		//b.putInt(this.outputIndex);
-		
+	private byte[] sign(PrivateKey sk) throws InvalidKeyException, NoSuchAlgorithmException, SignatureException {
 		ArrayList<Byte> rawData = new ArrayList<Byte>();
 		
-		if (prevTxHash != null)
-			for (int i = 0; i < this.prevTxHash.length; i++)
-				rawData.add(this.prevTxHash[i]);
+		for (int i = 0; i < this.prevTxHash.length; i++)
+			rawData.add(this.prevTxHash[i]);
 			    	    
 	    ByteBuffer bf = ByteBuffer.allocate(Integer.SIZE / BYTE_SIZE);
         bf.putInt(this.outputIndex);
@@ -73,8 +67,35 @@ public class Input implements Imodel {
 	    int i = 0;
 	    for (Byte b : rawData)
 	    	raw[i++] = b;
+		return Crypto.sign(sk, raw);
+		
+	}
+	
+	@Override
+	public byte[] getRawData() {		
+		
+		ArrayList<Byte> rawData = new ArrayList<Byte>();
+				
+		for (int i = 0; i < this.prevTxHash.length; i++)
+			rawData.add(this.prevTxHash[i]);
+			    	    
+	    ByteBuffer bf = ByteBuffer.allocate(Integer.SIZE / BYTE_SIZE);
+        bf.putInt(this.outputIndex);
+        byte[] outputIndex = bf.array();        
+        for (int i = 0; i < outputIndex.length; i++)
+        	rawData.add(outputIndex[i]);
+        
+        if (null != this.signature)
+        	for (int i = 0; i < signature.length; i++)
+        		rawData.add(signature[i]);
+        
+
+        byte[] raw = new byte[rawData.size()];
+	    int i = 0;
+	    for (Byte b : rawData)
+	    	raw[i++] = b;
 		 
-		 return raw;
+		return raw;
 	}
 	
 }

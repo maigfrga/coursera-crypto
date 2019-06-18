@@ -5,7 +5,7 @@ import java.security.PublicKey;
 
 
 
-public class Output {
+public class Output  implements Imodel {
     /** value in bitcoins of the output */
     private final double value;
     /** the address or public key of the recipient */
@@ -22,6 +22,12 @@ public class Output {
 
 	public PublicKey getAddress() {
 		return address;
+	}
+
+	@Override
+	public byte[] getRawData() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
