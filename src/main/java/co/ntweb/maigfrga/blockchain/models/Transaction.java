@@ -141,10 +141,21 @@ public class Transaction implements Imodel {
         this.sign();
     }
     
-    public void signInput(PrivateKey sk, int index) throws InvalidKeyException, NoSuchAlgorithmException, SignatureException {
+    
+    /***
+     * Sign a given input. The Transaction has to be built at this stage because
+     * the signature is created by appending the Input data and all the outputs
+     * @param sk
+     * @param inputIndex
+     * @throws InvalidKeyException
+     * @throws NoSuchAlgorithmException
+     * @throws SignatureException
+     */
+    public void signInput(PrivateKey sk, int inputIndex) throws InvalidKeyException, NoSuchAlgorithmException, SignatureException {
     	ArrayList<Byte> rawOutputData = new ArrayList<Byte>();
     	
-		for (Output out: this.outputs) {
+    	// Collects the raw data for all the transaction outputs
+    	for (Output out: this.outputs) {
 			for(byte b: out.getRawData()) {
 				rawOutputData.add(b);
 			}
@@ -155,10 +166,20 @@ public class Transaction implements Imodel {
 		for (Byte b : rawOutputData)
 		    rawOutpus[i++] = b;
 
-		Input in = this.inputs.get(index);
-		in.sign(sk, rawOutpus);
+		Input inToSing = this.inputs.get(inputIndex);
+		inToSing.sign(sk, rawOutpus);
+		List<Input> newL = new ArrayList<Input>();
 		
+		for(int idx=0; idx < this.inputs.size(); idx++) {
+			if(inputIndex == idx) {
+				newL.add(inToSing);
+			} else {
+				newL.add(this.inputs.get(idx));
+				
+			}
+		}
 		
+		this.inputs = ImmutableList.copyOf(newL);
     	
     }
     

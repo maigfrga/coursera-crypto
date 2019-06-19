@@ -50,7 +50,7 @@ public class Input implements Imodel {
         this.outputIndex = outputIndex;
     }
 
-	public byte[] sign(PrivateKey sk, byte[] rawOutputs )  throws InvalidKeyException, NoSuchAlgorithmException, SignatureException {
+	public void sign(PrivateKey sk, byte[] rawOutputs)  throws InvalidKeyException, NoSuchAlgorithmException, SignatureException {
 		ArrayList<Byte> rawData = new ArrayList<Byte>();
 		
 		for (int i = 0; i < this.prevTxHash.length; i++)
@@ -63,11 +63,16 @@ public class Input implements Imodel {
         for (int i = 0; i < outputIndex.length; i++)
         	rawData.add(outputIndex[i]);
 
+        for (int i = 0; i < rawOutputs.length; i++) {
+        	rawData.add(rawOutputs[i]);
+        }
+        
 		byte[] raw = new byte[rawData.size()];
 	    int i = 0;
 	    for (Byte b : rawData)
 	    	raw[i++] = b;
-		return Crypto.sign(sk, raw);
+		this.signature = Crypto.sign(sk, raw);
+		
 		
 	}
 	
