@@ -9,8 +9,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import com.google.common.base.Preconditions;
 
-
-
 import co.ntweb.maigfrga.blockchain.Crypto;
 
 
@@ -19,12 +17,11 @@ import co.ntweb.maigfrga.blockchain.Crypto;
  * output, the index of this output in that transaction (indices are simply integers starting from 0),
  * and a digital signature. For the input to be valid, the signature it contains must be a valid signature
  * over the current transaction with the public key in the spent output.
- * @author manuel
  *
  */
 
 
-public class Input implements Imodel {
+public class Input implements IModel {
     /** hash of the Transaction whose output is being used */
     private final byte[] prevTxHash;
     /** used output's index in the previous transaction */
@@ -50,19 +47,21 @@ public class Input implements Imodel {
         this.outputIndex = outputIndex;
     }
 
+	/**
+	 * Signs a given input. It appends all outputs raw data
+	 * @param sk
+	 * @param rawOutputs
+	 * @throws InvalidKeyException
+	 * @throws NoSuchAlgorithmException
+	 * @throws SignatureException
+	 */
 	public void sign(PrivateKey sk, byte[] rawOutputs)  throws InvalidKeyException, NoSuchAlgorithmException, SignatureException {
 		ArrayList<Byte> rawData = new ArrayList<Byte>();
 		
-		for (int i = 0; i < this.prevTxHash.length; i++)
-			rawData.add(this.prevTxHash[i]);
-			    	    
-	    ByteBuffer bf = ByteBuffer.allocate(Integer.SIZE / BYTE_SIZE);
-        bf.putInt(this.outputIndex);
-        byte[] outputIndex = bf.array();
-        
-        for (int i = 0; i < outputIndex.length; i++)
-        	rawData.add(outputIndex[i]);
-
+		for (int i = 0; i < this.getRawData().length; i++ ) {
+			rawData.add(rawOutputs[i]);
+		}
+		
         for (int i = 0; i < rawOutputs.length; i++) {
         	rawData.add(rawOutputs[i]);
         }
@@ -71,8 +70,7 @@ public class Input implements Imodel {
 	    int i = 0;
 	    for (Byte b : rawData)
 	    	raw[i++] = b;
-		this.signature = Crypto.sign(sk, raw);
-		
+		this.signature = Crypto.sign(sk, raw);	
 		
 	}
 	
@@ -94,7 +92,6 @@ public class Input implements Imodel {
         	for (int i = 0; i < signature.length; i++)
         		rawData.add(signature[i]);
         
-
         byte[] raw = new byte[rawData.size()];
 	    int i = 0;
 	    for (Byte b : rawData)

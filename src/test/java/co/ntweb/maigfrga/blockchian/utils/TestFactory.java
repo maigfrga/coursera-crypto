@@ -25,15 +25,10 @@ public class TestFactory {
 	    this.transactions = new HashMap<byte[], Transaction>();
 	}
 
-	public KeyPair createAddress() throws NoSuchAlgorithmException {
-		return KeyPairGenerator.getInstance("RSA").generateKeyPair();
-		
-	}
-
      /*
      * Set up the root transaction:
      */
-	public Transaction createRootTransaction(KeyPair owner, double value)  throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+	/*public Transaction createRootTransaction(KeyPair owner, double value)  throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
 		final Transaction tx = new Transaction();
         tx.addOutput(value, owner.getPublic());
 
@@ -45,19 +40,10 @@ public class TestFactory {
         tx.sign();
         this.transactions.put(tx.getHash(), tx);
         return tx;
-	}
+	}*/
 
 
-
-
-
-    private byte[] sign(PrivateKey privateKey, byte[] rawDataToSign) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        Signature sig = Signature.getInstance("SHA256withRSA");
-        sig.initSign(privateKey);
-        sig.update(rawDataToSign);
-        return sig.sign();
-    }
-
+	/*
 
 	public Transaction createTransaction(KeyPair sender, Map<byte[], Integer> inputs, Map<PublicKey, Double> outputs, Map<byte[], Integer> extraInputs )  throws NoSuchAlgorithmException, SignatureException, InvalidKeyException {
 
@@ -100,7 +86,7 @@ public class TestFactory {
 		tx.sign();
 		this.transactions.put(tx.getHash(), tx);
 		return tx;
-	}
+	}*/
 
     /**
      * Creates a UTXOPool with an initial unspent transaction
@@ -108,6 +94,7 @@ public class TestFactory {
      * @param initialRootValue
      * @return Map with the hash of the root transaction and the UTXOPool
      */
+	/*
 	public  Map<byte[], UTXOPool> createUtxoPool(KeyPair owner, double initialRootValue) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         // The transaction output of the root transaction is the initial unspent output.
         UTXOPool utxoPool = new UTXOPool();
@@ -121,7 +108,7 @@ public class TestFactory {
         }
         
 		return m;
-	}
+	}*/
 	
 
 	public static byte[] createRandomByteArray(int length) {

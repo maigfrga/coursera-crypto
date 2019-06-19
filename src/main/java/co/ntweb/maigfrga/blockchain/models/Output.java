@@ -5,9 +5,7 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 
 
-
-
-public class Output implements Imodel {
+public class Output implements IModel {
     /** value in bitcoins of the output */
     private final double value;
     /** the address or public key of the recipient */
