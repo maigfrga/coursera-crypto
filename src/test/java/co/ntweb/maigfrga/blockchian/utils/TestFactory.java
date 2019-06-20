@@ -8,8 +8,7 @@ import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 import co.ntweb.maigfrga.blockchain.models.Transaction;
-import co.ntweb.maigfrga.blockchain.models.UTXO;
-import co.ntweb.maigfrga.blockchain.models.UTXOPool;
+
 
 public class TestFactory {
 	private final ThreadLocalRandom random;
