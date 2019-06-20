@@ -15,6 +15,7 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 import com.google.errorprone.annotations.Immutable;
 
+import co.ntweb.maigfrga.blockchain.models.Block;
 import co.ntweb.maigfrga.blockchain.models.Input;
 import co.ntweb.maigfrga.blockchain.models.Output;
 import co.ntweb.maigfrga.blockchain.models.Transaction;
@@ -48,7 +49,7 @@ public class TestModels {
 	}
 	
 	@Test
-	public void testSignatures() throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+	public void testTransactionSignatures() throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
 		KeyPair aliceKeys = Crypto.generateKeys();
 		
 		List<Output> outputs = ImmutableList.of(new Output(10d, aliceKeys.getPublic()));		
@@ -64,6 +65,13 @@ public class TestModels {
 	}
 	
 	
+	
+	@Test
+	public void testBlocks() throws InvalidKeyException, NoSuchAlgorithmException, SignatureException {
+		Block block = new Block(TestFactory.createRandomByteArray(32));
+
+		
+	}
 	
 
 }
